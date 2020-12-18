@@ -1,0 +1,668 @@
+Введение в Stream API
+int [] numbers = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+int count = 0;
+for(int i:numbers){
+
+	if(i > 0) count++
+
+}
+System.out.println(count);
+----------------------------------------------------------
+import java.util.stream.*;
+//....................
+long count = IntStream.of(-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5).filter(w -> w > 0).count();
+System.out.println(count);
+----------------------------------------------------------
+interface BaseStream<T , S extends BaseStream<T , S>>
+----------------------------------------------------------
+
+
+
+Создание потока данных
+import java.util.stream.Stream;
+import java.util.*;
+public class Program {
+
+	public static void main(String[] args) {
+
+		ArrayList<String> cities = new ArrayList<String>();
+		Collections.addAll(cities, "Париж", "Лондон, "Мадрид");
+		cities.stream()//получаем поток
+			.filter(s->s.length()==6)//применяем фильтрацию по длинне строки
+			.forEach(s->System.out.println(s));//выводим отфильтрованные строки на консоль
+	}
+}
+------------------------------------------------------------
+ArrayList<String> cities = new ArrayList<String>();
+Collections.addAll(cities, "Париж", "Лондон", "Мадрид");
+
+Stream<String> citiesStream = cities.stream();//получаем поток
+citiesStream = citiesStream.filter(s->s.length()==6);//применяем фильтрацию по длинне строки
+citiesStream.forEach(s->System.out.println(s));//выводим отфильтрованные строки на консоль
+------------------------------------------------------------
+citiesStrem.forEach(s->System.out.println(s));//терминальная операция употребляет поток
+long number = citiesStream.count();//здесь ошибка, так как поток уже употреблён
+System.out.println(number);
+citiesStream = citiesStream.filter(s->s.length().5);//тоже нельзя, так как поток уже употреблён
+------------------------------------------------------------
+Stream<String> citiesStream = Arrays.stream(new String[]{"Париж", "Лондон", "Мадрид"});
+citiesStream.forEach(s->System.out.println(s));//выводим все элементы массива
+------------------------------------------------------------
+IntStream intStream = Arrays.stream(new int[]{1,2,4,5,7});
+intStream.forEach(i->System.out.println(i));
+
+LongStream longStream = Arrays.stream(new long[]{100, 250, 400, 5843787, 237});
+longStream.forEach(1->System.out.println(1));
+
+DoubleStream doubleStream = Arrays.stream(new double[] {3.4, 6.7, 9.5, 8.2345, 121});
+doubleStream.forEach(d->System.out.println(d));
+-------------------------------------------------------------
+Stream<String> citiesStream =Stream.of("Париж", "Лондон", "Мадрид");
+citiesStream.forEach(s->System.out.println(s));
+
+//можно передать массив
+String[] cities = {"Париж", "Лондон", "Мадрид"};
+Stream<String> citiesStream2 =Stream.of(cities);
+
+IntStream intStream = intStream.of(1,2,4,5,7);
+intStream.forEach(1->System.out.println(i));
+
+LongStream longStream = LongStream.of(100,250,400,5843787,237);
+longStream.forEach(1->System.out.println(1));
+
+DoubleStream doubleStream = DoubleStream.of(3.4, 6.7, 9.5, 8.2345, 121);
+doubleStream.forEach(d->System.out.println(d));
+
+
+
+Фильтрация, перебор элементов и отображение
+Stream<String> citiesStream = Stream.of("Париж", "Лондон", "Мадрид", "Берлин", "Брюссель");
+citiesStream.forEach(s->System.out.println(s));
+--------------------------------------------------------------
+Stream<String> citiesStream = Stream.of("Париж", "Лондон", "Мадрид", "Берлин", "Брюссель");
+citiesStream.forEach(System.out::println);
+--------------------------------------------------------------
+Stream<String> citiesStream = Stream.of("Париж", "Лондон", "Мадрид", "Берлин", "Брюссель");
+citiesStream.filter(s->s.length()==6).forEach(s->System.out.println(s));
+--------------------------------------------------------------
+class Phone{
+
+	private String name;
+	private int price;
+
+	public Phone(String name, int price){
+		this.name=name;
+		this.price=price;
+	}
+
+	public String getName(){
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getPrice(){
+		return price;
+	}
+
+	public void serPrice(int price) {
+		this.price = price;
+	}
+}
+----------------------------------------------------------------
+Stream<Phone> phoneStream = Stream.of(new Phone("iPhone 6 S", 54000), new Phone("Lumia 950", 45000),
+		new Phone("Samsung Galaxy S 6", 40000));
+
+phoneStream.filter(p->p.getPrice()<50000).forEach(p->System.out.println(p.getName()));
+----------------------------------------------------------------
+<R> Stream<R> map(Function<& super T. & extends R> mapper)
+----------------------------------------------------------------
+Stream<Phone> phoneStream = Stream.of(new Phone("iPhone 6 S", 54000), new Phone("Lumia 950", 45000),
+		new Phone("Samsung Galaxy S 6", 40000));
+
+phoneStream
+	.map(p->p.getName()) //помещаем в поток только названия телефонов
+	.forEach(s->System.out.println(s));
+-----------------------------------------------------------------
+phoneStream
+	.map(p-> "название: " + p.getNme() + "цена: " + p.getPrice())
+	.forEach(s->System.out.println(s));
+-----------------------------------------------------------------
+<R> Streamer<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper)
+-----------------------------------------------------------------
+Stream<Phone> phoneStream = Stream.of(new Phone("iPhone 6 S", 54000), new Phone("Lumia 950", 45000),
+		new Phone("Samsung Galaxy S 6", 40000));
+
+phoneStream
+	.flatMap(p->Stream.of(
+		String.format("название" %s цена без скидки: %d", p.getName(), p.getPrice()),
+		String.format("название: %s цена со скидкой: %d", p.getName(), p.getPrice() - (int)(p.getPrice()*0.1))
+	))
+	.forEach(s->System.out.println(s));
+
+
+
+Сортировка
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Program {
+	
+	public static void main(String[] args) {
+		List<String> phones = new ArrayList<String>();
+		Collections.addAll(phones, "iPhone X", "Nokia 9", "Huawei Nexus 6P",
+                "Samsung Galaxy S8", "LG G6", "Xiaomi MI6",
+                "ASUS Zenfone 3", "Sony Xperia Z5", "Meizu Pro 6",
+                "Pixel 2");
+
+		phones.stream()
+			.filter(p->p.length()<12)
+			.sorted()//сортировка по возрастанию
+			.forEach(s->System.out.println(s));
+	}
+}
+----------------------------------------------------------------
+class Phone{
+
+	private String name;
+	private String company;
+	private int price;
+
+	public Phone(String name, String comp, int price){
+		this.name=name;
+		this.company=comp;
+		this.price=price;
+	}
+
+	public String getNme() { return name; }
+	public int getPrice() { return price; }
+	public String getCompany() {return company; }
+}
+-----------------------------------------------------------------
+import java.util.Comparator;
+import java.util.stream.Stream;
+
+public class Program {
+
+	public static void main(String[] arg) {
+
+		Stream<Phone> phoneStream = Stream.of(new Phone("iPhone X", "Apple", 600),
+			new Phone("Pixel 2", "Google", 500),
+			new Phone("iPhone 8", "Apple", 450),
+			new Phone("Nokia 9", "HMD Global", 150),
+			new Phone("Galaxy S9", "Samsung", 300));
+
+		phoneStream.sorted(new PhoneComparator())
+			.forEach(p->System.out.printf("%s (%s) - %d \n",
+				p.getName(), p.getCompany(), p.getPrice()));
+
+	}
+}
+class PhoneComparator implements Comparator<Phone>{
+
+	public int compare(Phone a, Phone b){
+
+		return a.getName().toUpperCase().compareTo(b.getName().toUpperCase());
+	}
+}
+
+
+
+Получение подпотока и объединение потоков
+import java.util.stream.Stream;
+
+public class Program {
+
+	public static void main(String[] args) {
+		
+		Stream<Integer> numbers = Stream.of(-3, -2, -1, 0, 1, 2, 3, -4, -5);
+		numbers.takeWhile(n -> n < 0)
+			.forEach(n -> System.out.println(n));
+
+	}
+}
+------------------------------------------------------------------------
+Stream<Integer> numbers = Stream.of(-3, -2, -1, 0, 1, 2, 3, -4, -5);
+numbers.sorted().takeWhile( -> n < 0)
+	.forEach(n -> System.out.println(n));
+------------------------------------------------------------------------
+Stream<Integer> numbers = Stream.of(-3, -2, -1, 0, 1, 2, 3, -4, -5);
+numbers.sorted().dropWhile(n -> n <0)
+	.forEach(n -> System.out.println(n));
+------------------------------------------------------------------------
+import java.util.stream.Stream;
+
+public class Program {
+
+	public static void main(Streng[] args) {
+
+		Stream<String> people1 = Stream.of("Tom", "Bob", "Sam");
+		Stream<String> people2 = Stream.of("Alice", "Kate", "Sam");
+
+		Stream.concat(people1, people2).forEach(n -> System.out.println(n));
+	}
+}
+------------------------------------------------------------------------
+Stream<String> people = Stream.of("Tom", "Bob", "Sam", "Tom", "Alice", "Kate", "Sam");
+people.distinct().forEach(p -> System.out.println(p));
+
+
+
+
+Методы skip и limit
+Stream<String> phoneStream = Stream.of("iPhone 6 S", "Lumia 950", "Samsung Galaxy S 6", "LG G 4", "Nexus 7");
+
+phoneStream.skip(1)
+	.limit(2)
+	.forEach(s->System.out.println(s));
+------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.*;
+import java.util.Scanner;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+		List<String> phones = new ArrayList<String>();
+		phones.addAll(Arrays.asList(new String[]
+			{"iPhone 6 S", "Lumia 950", "Huawei Nexus 6P",
+                	"Samsung Galaxy S 6", "LG G 4", "Xiaomi MI 5",
+                	"ASUS Zenfone 2", "Sony Xperia Z5", "Meizu Pro 5",
+                	"Lenovo S 850"}));
+
+		int pageSize = 3;// количество элементов на страницу
+		Scanner scanner = new Scanner(System.in);
+		while(true){
+
+			System.out.println("Введите номер страницы: ");
+			int page = scanner.nextInt();
+
+			if(page<1) break;//усли число меньше 1, выходим из цикла
+
+			phones.stream().skip((page-1) * pageSize)
+				.limit(pageSize)
+				.forEach(s->System.out.println(s));
+		}
+	}
+}
+
+
+
+Операции сведения
+import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.*;
+public class Program {
+
+	public static void main(String[] args) {
+
+		ArrayList<String> names = new ArrayList<String>();
+		names.addAll(Arrays.asList(new String []{"Tom", "Sam", "Bob", "Alice"}));
+		System.out.prontln(names.stream().count()); //4
+
+		//количество элементов с длинной не больше 3 символов
+		System.out.println(names.string().filter(n->n.length()<=3).count()); //3
+	}
+}
+---------------------------------------------------------------------------
+ArrayList<String> names = new ArrayList<String>();
+names.addAll(Arrays.asList(new String[]{"Tom", "Sam", "Bob", "Alice"}));
+
+Optional<String> first = names.stream().findFirst();
+System.out.println(first.get());	//Tom
+
+Optional<String> any = names.stream().findAny();
+System.out.println(first.get());	//Tom
+---------------------------------------------------------------------------
+import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+public class Program {
+
+	public static void maim(String[] args) {
+
+		ArrayList<String> names = new ArrayList<String>();
+		names.addAll(Arrays.asList(new String[]{"Tom", "Sam", "Bob", "Alice"}));
+		
+		// есть ли в потоке строка, длинна которой больше 3
+		boolean any = names.stream().anyMatch(s->s.length()>3);
+		System.out.println(any); //true
+
+		// все ли строки имеют длину в 3 символа
+		boolean all = names.stream().allMatch(s->s.length()==3);
+		System.out.println(all); //false
+
+		//НЕТ ЛИ в потоке строки "Bill". Если нет, то true, если есть, то false.
+		boolean none = names.stream().noneMatch(s->s=="Bill");
+		System.out.println(none); // true
+	}
+}
+------------------------------------------------------------------------------
+Oprional<T> min(Comparator<? super T> comparator)
+Optional<T> max(Comparator<? super T> comparator)
+------------------------------------------------------------------------------
+import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+public class Program {
+
+	public static void main(String[] args) {
+
+		ArrayList<Integer> numbers = new ArrayList<Integer>();
+		numbers.addAll(Arrays.asList(new Integer[]{1,2,3,4,5,6,7,8,9}));
+
+		Optional<Integer> min = numbers.stream().min(Integer::compare);
+		Optional<Integer> max = numbers.stream().max(Integer::compare);
+		System.out.println(min.get()); // 1
+		System.out.println(max.get()); // 9
+	}
+}
+--------------------------------------------------------------------------------
+import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+public class Program {
+
+	public static void main(Stream[] args) {
+
+		ArrayList<Phone> phones = new ArrayList<Phone>();
+		phones.addAll(Arrays.asList(new Phone[]{
+			new Phone("iPhone 8", 52000),
+			new Phone("Nokia 9", 35000),
+			new Phone("Samsung Galaxy S9", 48000),
+			new Phone("HTC U12", 36000)
+		}));
+
+		Phone min = phones.stream().min(Phone::compare).get();
+		Phone max = phone.stream().max(Phone::compare).get();
+		System.out.printf("MIN Name: %s Price: %d \n", min.getName(), min.getPrice());
+		System.out.printf("MAX Name: %s Price: %d \n", max.getName(), max.getPrice());
+	}
+}
+class Phone{
+	
+	private String name;
+	private int price;
+
+	piblic Phone(String name, int price){
+		this.name=name;
+		this.price=price;
+	}
+	public static int compare (Phone p1, Phone p2){
+		if(p1.getPrice() > p2.getPrice())
+			return 1;
+		return -1;
+	}
+	public String getName() { return name; }
+	public int getPrice() { return price;}
+}
+
+
+
+Метод reduce
+Optional<T> reduce(BinaryOperator<T> accumulator)
+T reduce(T identity, BinaryOperator<T> accumulator)
+U reduce(U identity, BiFunction<U,? super T,U> accumulator, BinaryOperator<U> combiner)
+---------------------------------------------------------------------------
+import java.util.stream.Stream;
+import java.util.Optional;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+		Stream<Integet> numbersStream = Stream.of(1,2,3,4,5,6);
+		Optional<Integer> result = numbersStream.reduce((x,y)->x*y);
+		System.out.println(result.get()); //720
+	}
+}
+-----------------------------------------------------------------------------
+Stream<String> wordsStream = Stream.of("мама", "мыла", "раму");
+Optional<String> sentence = wordsStream.reduce((x,y)->x + " " + y);
+System.out.println(sentence.get());
+-----------------------------------------------------------------------------
+T reduce(T identity, BinaryOperator<T> accumulator)
+-----------------------------------------------------------------------------
+T result = identity;
+for (T element : this stream)
+	result = accumulator.apply(result, element)
+return result;
+-----------------------------------------------------------------------------
+Stream<Integer> numberStream = Stream.of(-4, 3, -2, 1);
+int identity = 1;
+int result = numberStream.reduce(identity, (x,y)->x * y);
+System.out.println(result); //24
+-----------------------------------------------------------------------------
+class Phone{
+
+	private String name;
+	private int price;
+
+	public Phone(String name, int price){
+		this.name=name;
+		this.price=price;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+}
+------------------------------------------------------------------------------
+Stream<Phone> phoneStream = Stream.of(new Phone("iPhone 6 S", 54000),
+	new Phone("Lumia 950", 45000),
+	new Phone("Samsung Galaxy S 6", 40000),
+	new Phone("LG G 4", 32000));
+
+int sum = phoneStream.reduce(0,
+	(x,y)-> {
+		if(y.getPrice()<54000)
+			return x + y.getPrice();
+		else
+			return x + 0;
+		},
+		(x, y)->x+y);
+
+System.out.println(sum); // 11700
+
+
+
+Тип Optional
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+public class Program {
+
+	public static void main(String[] args) {
+
+		ArrayList<Integer> numbers = new ArrayList<Integer>();
+		numbers.addAll(Arrays.asList(new Integer[]{1,2,3,4,5,6,7,8,9}));
+		Optional<Integer> min = numbers.stream().min(Integer::compare);
+		System.out.println(min.get()); // 1
+	}
+}
+----------------------------------------------------------------------------
+// список numbers пустой
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+System.out.println(min.get()); //java.util.NoSuchElementExeption
+----------------------------------------------------------------------------
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+if(min.isPresent()){
+
+	System.out.println(min.get());
+}
+-----------------------------------------------------------------------------
+// пустой список
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+System.out.println(min.orElse(-1)); // -1
+
+// непустой список
+numbers.addAll(Arrays.asList(new Integer[]{4,5,6,7,8,9}));
+min = numbers.stream().min(Integer::compare);
+System.out.println(min.orElse(-1)); // 4
+-----------------------------------------------------------------------------
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+	ArrayLsit<Integer> numbers = new ArrayList<Integer>();
+	Optional<Integer> min = numbers.stream().min(Integer::compare);
+	Random rnd = new Random();
+	System.out.println(min.orElseGet(()->rnd.nextInt(100)));
+	}
+}
+------------------------------------------------------------------------------
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+// генерация исключения illegalStateExeption
+System.out.println(min.orElseThrow(illegalStateExeption::new));
+------------------------------------------------------------------------------
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+numbers.addAll(Arrays.asList(new Integer[]{4,5,6,7,8,9}));
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+min.ifPresent(v->System.out.println(v)); // 4
+------------------------------------------------------------------------------
+ArrayList<Integer> numbers = new ArrayList<Integer>();
+Optional<Integer> min = numbers.stream().min(Integer::compare);
+min.ifPresentOrElse(
+	v -> System.out.println(v),
+	() -> System.out.println("Value not found")
+);
+
+
+
+Метод collect
+<R,A> R collect(Collector<? super T,A,R> collector)
+-------------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Program {
+
+	public static void main(String[] args) {
+		
+		List<String> phones = new ArrayList<String>();
+		Collections.addAll(phones,"iPhone 8", "HTC U12", "Huawei Nexus 6P",
+                "Samsung Galaxy S9", "LG G6", "Xiaomi MI6", "ASUS Zenfone 2", 
+                "Sony Xperia Z5", "Meizu Pro 6", "Lenovo S850");
+
+	List<String> filteredPhones = phones.stream()
+		.filter(s->s.length()<10)
+		.collect(Collectors.toList());
+
+	for(String s : filteredPhones){
+		System.out.println(s);
+		}
+	}
+}
+---------------------------------------------------------------------------------
+Set<String> filteredPhones = phones.stream()
+	.filter(s->s.length()<10)
+	.collect(Collectors.toSet());
+---------------------------------------------------------------------------------
+class Phone{
+
+	private String name;
+	private int price;
+
+	public Phone(String name, int price) {
+		this.name=name;
+		this.price=price;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+}
+-----------------------------------------------------------------------------------
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+		Stream<Phone> phoneStream = Stream.of(new Phone("iPhone 8", 54000),
+			new Phone("Nokia 9", 45000),
+			new Phone("Samsung Galaxy S9", 40000),
+			new Phone("LG G6", 32000));
+
+		Map<String, Integer> phones = phoneStream
+			.collect(Collectors.toMap(p->p.getName(), t->t.getPrice()));
+		
+		phones.forEach((k,v)->System.out.println(k + " " + v));
+	}
+}
+class Phone{
+----------------------------------------------------------------------------------
+import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+		Stream<String> phones = Stream.of("iPhone 8", "HTC U12", "Huawei Nexus 6P",
+                "Samsung Galaxy S9", "LG G6", "Xiaomi MI6", "ASUS Zenfone 2", 
+                "Sony Xperia Z5", "Meizu Pro 6", "Lenovo S850");
+
+		HashSet<String> filteredPhones = phones.filter(s->s.length()<12).
+					collect(Collectors.toCollection(HashSet::new));
+
+		filteredPhones.forEach(s->System.out.println(s));
+	}
+}
+-----------------------------------------------------------------------------------
+ArrayList<String> result = phones.collect(Collectors.toCollection(ArrayList::new));
+-----------------------------------------------------------------------------------
+<R> R collect(Supplier<R> supplier, BiConsumer<R,? super T> accumulator, BiConsumer<R,R> combiner)
+-----------------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.utils.stream.Stream;
+
+public class Program {
+
+	public static void main(String[] args) {
+
+		Stream<String> phones = Stream.of("iPhone 8", "HTC U12", "Huawei Nexus 6P",
+                "Samsung Galaxy S9", "LG G6", "Xiaomi MI6", "ASUS Zenfone 2", 
+                "Sony Xperia Z5", "Meizu Pro 6", "Lenovo S850");
+
+		ArrayList<String> filteredPhones = phones.filter (s->s.length()<12)
+			.collect(
+			()->new ArraysList<String>(), // создаем ArrayList
+			(list, item)->list.add(item),  // добавляем в список элемент
+			(list1, list2)-> list1.addAll(list2)); // добавляем в список другой список
+
+		filteredPhones.forEach(s->System.out.println(s));
+	}
+}
